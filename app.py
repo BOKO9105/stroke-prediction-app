@@ -12,9 +12,9 @@ st.set_page_config(page_title="Prédiction d'AVC", layout="wide")
 @st.cache_resource
 def load_model_and_data():
     # Load model and data
-    model = joblib.load("D:/Home/bboko/Documents/PYTHON/AVC/stroke_app/modele_logreg_5var_avc.pkl")
-    scaler = joblib.load("D:/Home/bboko/Documents/PYTHON/AVC/stroke_app/scaler_5var.pkl")
-    data = pd.read_csv('D:/Home/bboko/Documents/PYTHON/AVC/healthcare-dataset-stroke-data.csv')
+    model = joblib.load("assets/modele_logreg_5var_avc.pkl")
+    scaler = joblib.load("assets/scaler_5var.pkl")
+    data = pd.read_csv('assets/healthcare-dataset-stroke-data.csv')
     
     # Preprocessing
     median_bmi = data['bmi'].median()
