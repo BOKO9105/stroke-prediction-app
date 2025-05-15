@@ -105,8 +105,9 @@ elif page == "🔮 Simulation de Prédiction":
     with st.form("formulaire_avc"):
         col1, col2 = st.columns(2)
         with col1:
-            age = st.slider("Âge", 1, 100, 50)
+            age = st.number_input("Âge", 1, 100, 50)
             taille_cm = st.number_input("Taille (cm)", 100, 250, 170)
+            glucose = st.number_input("Taux de glucose moyen (mg/dL)", 50, 300, 100)
         with col2:
             poids_kg = st.number_input("Poids (kg)", 30, 200, 70)
             hypertension = st.checkbox("Hypertension artérielle")
