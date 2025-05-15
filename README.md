@@ -17,8 +17,7 @@ This project aims to demonstrate the potential of **data science and machine lea
 
 ## 🚀 Live Demo
 
-🔗 [Try the app on Streamlit Cloud](https://stroke-prediction-app.streamlit.app) *(replace with your real URL)*
-
+🔗 [Try the app on Streamlit Cloud](https://stroke-prediction-app-hyzvtgvfezozbzupoyektz.streamlit.app/)
 ## 🧪 Technologies Used
 
 - Python 3.9
@@ -46,12 +45,4 @@ This project aims to demonstrate the potential of **data science and machine lea
 
 I am passionate about data science applied to public health and aim to pursue a **Master 2 in Data Science for Health** and a **PhD in AI and Health**.
 
----
 
-## 📦 Installation (Local Use)
-
-```bash
-git clone https://github.com/yourusername/stroke-prediction-app.git
-cd stroke-prediction-app
-pip install -r requirements.txt
-streamlit run app.py
