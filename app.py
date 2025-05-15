@@ -128,7 +128,8 @@ elif page == "🔮 Simulation de Prédiction":
         }
         
         input_df = pd.DataFrame(input_data)
-        input_scaled = scaler.transform(input_df)
+        input_scaled = pd.DataFrame(scaler.transform(input_df), columns=input_df.columns)
+
         
         # Prédiction
         proba = model.predict_proba(input_scaled)[0][1]
