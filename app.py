@@ -48,6 +48,12 @@ if scaler is None or model is None:
     st.error("L'application ne peut pas charger les ressources nécessaires. Veuillez vérifier les fichiers dans le dossier 'assets'.")
     st.stop()
 
+# Fonction de calcul d'IMC
+def calculer_imc(taille_cm, poids_kg):
+    taille_m = taille_cm / 100
+    return poids_kg / (taille_m ** 2)
+
+
 # Titre principal
 st.title("📊 Modèle de Prédiction d'AVC")
 
@@ -96,19 +102,21 @@ if page == "📈 Statistiques du Modèle":
 elif page == "🔮 Simulation de Prédiction":
     st.header("Simulateur de Risque d'AVC")
     
-    with st.form("formulaire_5var"):
+    with st.form("formulaire_avc"):
         col1, col2 = st.columns(2)
         with col1:
             age = st.slider("Âge", 1, 100, 50)
+            taille_cm = st.number_input("Taille (cm)", 100, 250, 170)
+        with col2:
+            poids_kg = st.number_input("Poids (kg)", 30, 200, 70)
             hypertension = st.checkbox("Hypertension artérielle")
             heart_disease = st.checkbox("Maladie cardiaque")
-        with col2:
-            glucose = st.number_input("Taux de glucose moyen (mg/dL)", 50, 300, 100)
-            bmi = st.number_input("IMC", 10.0, 60.0, 25.0)
-
+        
         submitted = st.form_submit_button("Calculer le risque")
 
     if submitted:
+        # Calcul automatique de l'IMC
+        bmi = calculer_imc(taille_cm, poids_kg)
         # Préparation des données
         input_data = {
             'age': [age],
