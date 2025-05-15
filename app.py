@@ -2,40 +2,53 @@ import streamlit as st
 import pandas as pd
 import joblib
 import matplotlib.pyplot as plt
+import os
 from sklearn.metrics import RocCurveDisplay
 from sklearn.model_selection import train_test_split
 
-
-# MUST BE THE FIRST STREAMLIT COMMAND (and only one)
+# Configuration de la page (DOIT ÊTRE LA PREMIÈRE COMMANDE)
 st.set_page_config(page_title="Prédiction d'AVC", layout="wide")
 
 @st.cache_resource
 def load_model_and_data():
-    # Load model and data
-    model = joblib.load("assets/modele_logreg_5var_avc.pkl")
-    scaler = joblib.load("assets/scaler_5var.pkl")
-    data = pd.read_csv('assets/healthcare-dataset-stroke-data.csv')
+    try:
+        # Chemin relatif pour les assets
+        base_path = os.path.dirname(__file__)
+        
+        # Charger le modèle et le scaler
+        model_path = os.path.join(base_path, 'assets', 'modele_logreg_5var_avc.pkl')
+        scaler_path = os.path.join(base_path, 'assets', 'scaler_5var.pkl')
+        data_path = os.path.join(base_path, 'assets', 'healthcare-dataset-stroke-data.csv')
+        
+        model = joblib.load(model_path)
+        scaler = joblib.load(scaler_path)
+        data = pd.read_csv(data_path)
+        
+        # Prétraitement des données
+        median_bmi = data['bmi'].median()
+        data = data.assign(
+            bmi=data['bmi'].fillna(median_bmi),
+            smoking_status=data['smoking_status'].fillna('unknown')
+        )
+        
+        # Séparation des features et target
+        X = data[['age', 'hypertension', 'heart_disease', 'avg_glucose_level', 'bmi']]
+        y = data['stroke']
+        
+        return scaler, model, X, y
     
-    # Preprocessing
-    median_bmi = data['bmi'].median()
-    data = data.assign(
-        bmi=data['bmi'].fillna(median_bmi),
-        smoking_status=data['smoking_status'].fillna('unknown')
-    )
-    
-    # Separate features and target
-    X = data.drop('stroke', axis=1)
-    y = data['stroke']
-    
-    # Get the feature names the model expects
-    feature_names = model.feature_names_in_
-    
-    return scaler, model, X, y, feature_names
+    except Exception as e:
+        st.error(f"Erreur lors du chargement des ressources : {str(e)}")
+        return None, None, None, None
 
-# Load data
-scaler, model, X, y, feature_names = load_model_and_data()
+# Chargement des données
+scaler, model, X, y = load_model_and_data()
 
-# Title
+if scaler is None or model is None:
+    st.error("L'application ne peut pas charger les ressources nécessaires. Veuillez vérifier les fichiers dans le dossier 'assets'.")
+    st.stop()
+
+# Titre principal
 st.title("📊 Modèle de Prédiction d'AVC")
 
 # Navigation
@@ -43,34 +56,27 @@ page = st.sidebar.radio("Navigation", [
     "📈 Statistiques du Modèle", 
     "🔮 Simulation de Prédiction",
     "👤 À propos"
-    ])
+])
 
 if page == "📈 Statistiques du Modèle":
     st.header("Performances du Modèle Logistique")
     
-    # Split data for evaluation
+    # Split des données
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     
-    # Prepare test data with same features as model expects
-    X_test_processed = pd.get_dummies(X_test)
-    missing_cols = set(feature_names) - set(X_test_processed.columns)
-    for col in missing_cols:
-        X_test_processed[col] = 0
-    X_test_processed = X_test_processed[feature_names]
-    
-    # Metrics
+    # Métriques
     col1, col2, col3 = st.columns(3)
     col1.metric("AUC-ROC", "0.839", "Bonne discrimination")
     col2.metric("Sensibilité", "78.7%", "Détection des AVC")
     col3.metric("Spécificité", "73.2%", "Exclusion des non-AVC")
     
-    # ROC Curve
+    # Courbe ROC
     st.subheader("Courbe ROC")
     fig, ax = plt.subplots()
-    RocCurveDisplay.from_estimator(model, X_test_processed, y_test, ax=ax)
+    RocCurveDisplay.from_estimator(model, X_test, y_test, ax=ax)
     st.pyplot(fig)
     
-    # Model coefficients
+    # Coefficients du modèle
     st.subheader("Variables Influentes")
     coefficients = pd.DataFrame({
         'Variable': ['Âge', 'Hypertension', 'Maladie cardiaque', 'Glucose', 'IMC'],
@@ -79,7 +85,7 @@ if page == "📈 Statistiques du Modèle":
     })
     st.dataframe(coefficients.style.format({'Odds Ratio': '{:.2f}'}))
     
-    # Clinical interpretation
+    # Interprétation clinique
     st.subheader("Points Clés Cliniques")
     st.markdown("""
     - **Âge** : Facteur de risque majeur (OR=6.70 par année)
@@ -88,7 +94,6 @@ if page == "📈 Statistiques du Modèle":
     """)
 
 elif page == "🔮 Simulation de Prédiction":
-
     st.header("Simulateur de Risque d'AVC")
     
     with st.form("formulaire_5var"):
@@ -104,93 +109,84 @@ elif page == "🔮 Simulation de Prédiction":
         submitted = st.form_submit_button("Calculer le risque")
 
     if submitted:
-        # Préparation des données utilisateur
-        input_dict = {
-            'age': age,
-            'hypertension': int(hypertension),
-            'heart_disease': int(heart_disease),
-            'avg_glucose_level': glucose,
-            'bmi': bmi
+        # Préparation des données
+        input_data = {
+            'age': [age],
+            'hypertension': [int(hypertension)],
+            'heart_disease': [int(heart_disease)],
+            'avg_glucose_level': [glucose],
+            'bmi': [bmi]
         }
-        input_df = pd.DataFrame([input_dict])
-        input_scaled = pd.DataFrame(scaler.transform(input_df), columns=input_df.columns)
-
-
+        
+        input_df = pd.DataFrame(input_data)
+        input_scaled = scaler.transform(input_df)
+        
         # Prédiction
         proba = model.predict_proba(input_scaled)[0][1]
 
-        # Affichage
+        # Affichage des résultats
         st.subheader("🧮 Résultat de la Prédiction")
         if proba > 0.7:
             couleur = "red"
-            message = "🔴 Risque élevé – consultez un professionnel rapidement"
+            message = "🔴 Risque élevé - Consultation urgente recommandée"
         elif proba > 0.3:
             couleur = "orange"
-            message = "🟠 Risque modéré – une surveillance médicale est conseillée"
+            message = "🟠 Risque modéré - Surveillance médicale conseillée"
         else:
             couleur = "green"
-            message = "🟢 Risque faible – maintien des bonnes pratiques recommandé"
+            message = "🟢 Risque faible - Continuez vos bonnes habitudes"
 
-        st.metric("Probabilité d'AVC", f"{proba*100:.1f} %")
+        st.metric("Probabilité d'AVC", f"{proba*100:.1f}%")
         st.progress(int(proba * 100))
         st.markdown(f"<p style='color:{couleur}; font-size:18px'>{message}</p>", unsafe_allow_html=True)
 
         # Analyse des facteurs
         st.subheader("🔍 Facteurs de Risque Détectés")
         facteurs = []
-        if age > 60: facteurs.append(f"Âge élevé ({age})")
-        if hypertension: facteurs.append("Hypertension")
+        if age > 60: facteurs.append(f"Âge élevé ({age} ans)")
+        if hypertension: facteurs.append("Hypertension artérielle")
         if heart_disease: facteurs.append("Maladie cardiaque")
         if glucose > 140: facteurs.append(f"Hyperglycémie ({glucose} mg/dL)")
-        if bmi > 30: facteurs.append(f"IMC élevé (obésité, {bmi})")
+        if bmi > 30: facteurs.append(f"IMC élevé ({bmi})")
 
         if facteurs:
-            st.markdown("Ce patient présente :")
+            st.write("Facteurs identifiés :")
             for f in facteurs:
                 st.write(f"- {f}")
         else:
-            st.info("Aucun facteur de risque majeur détecté.")
+            st.info("Aucun facteur de risque majeur détecté")
+
 else:
     st.header("👤 À propos de ce projet")
-
     st.markdown("""
     ### Auteur : Bidossessi BOKO  
     📧 **Email :** boko.rodrigue@yahoo.fr  
     📍 **Localisation :** Rennes, France  
 
     ---
-    ### 🎓 Projet : Prédiction du risque d’AVC  
-    Ce projet s'inscrit dans une démarche de valorisation des données de santé à des fins préventives. Il utilise une régression logistique basée sur 5 variables cliniques simples pour prédire la probabilité d’AVC.
-
-    ---
-    ### 🎯 Objectif professionnel  
-    Passionné par la data science appliquée à la santé publique, je vise à :
-    - Poursuivre un **Master 2 en Data Science en Santé Publique**
-    - Développer un projet de **doctorat en Intelligence Artificielle pour la Santé**
-    - Contribuer à des outils de **prévention, de dépistage et de décision clinique** au service des patients et des systèmes de santé.
+    ### 🎓 Projet : Prédiction du risque d'AVC  
+    Application développée avec Streamlit utilisant un modèle de régression logistique pour évaluer le risque d'accident vasculaire cérébral.
 
     ---
     ### 🛠️ Technologies utilisées
-    - Python (scikit-learn, pandas, matplotlib)
-    - Streamlit
-    - Modélisation supervisée
-    - Interface utilisateur interactive
+    - Python (scikit-learn, pandas)
+    - Streamlit pour l'interface
+    - Modélisation prédictive
 
     ---
-    *Merci de votre intérêt pour ce projet !*
+    *Pour toute question ou collaboration, n'hésitez pas à me contacter.*
     """)
 
-
-# Sidebar instructions
+# Instructions dans la sidebar
 with st.sidebar:
-    st.markdown("""
-    **Instructions:**
-    1. Remplissez le formulaire
+    st.info("""
+    **Instructions :**
+    1. Remplissez le formulaire de prédiction
     2. Cliquez sur "Calculer le risque"
-    3. Consultez les résultats
+    3. Consultez les résultats et recommandations
     
-    **Seuils de risque:**
-    - 🔴 > 70%: Risque élevé
-    - 🟠 30-70%: Risque modéré
-    - 🟢 < 30%: Risque faible
+    **Seuils de risque :**
+    - 🔴 > 70% : Risque élevé
+    - 🟠 30-70% : Risque modéré
+    - 🟢 < 30% : Risque faible
     """)
