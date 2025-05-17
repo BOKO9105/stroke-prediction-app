@@ -87,9 +87,10 @@ if page == "📈 Statistiques du Modèle":
     coefficients = pd.DataFrame({
         'Variable': ['Age', 'Type de Travail', 'Hypertension', 'Statut fumeur', 'Maladie cardiaque', 'Taux de glucose moyen', 'Formel statut fumeur', 'Type de résidence', 'IMC', 'Genre'],
         'Coefficient': [1.901734, 1.047939, 0.528837, 0.397470, 0.289032, 0.201406, 0.172560, 0.051440, 0.005707, -0.014830],
-        'Odds Ratio': [6.70, 2.85, 1.70, 1.49, 1.34, 1.22, 1.19, 1.05, 1.00, 0.98]
+        'Odds Ratio': [6.70, 2.85, 1.70, 1.49, 1.34, 1.22, 1.19, 1.05, 1.00, 0.98],
+        'Intervalle de Confiance 95%': ['[3.42 ; 13.10]', '[1.66 ; 4.89]', '[1.37 ; 2.10]', '[1.08 ; 2.04]', '[1.01 ; 1.77]', '[1.08 ; 1.38]', '[0.94 ; 1.51]', '[0.89 ; 1.24]', '[0.98 ; 1.03]', '[0.71 ; 1.36]']
     })
-    st.dataframe(coefficients.style.format({'Odds Ratio': '{:.2f}'}))
+    st.dataframe(coefficients.style.format({'Coefficient': '{:.2f}'}))
     
     # Interprétation clinique
     st.subheader("Points Clés Cliniques")
