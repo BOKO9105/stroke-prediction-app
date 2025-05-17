@@ -85,9 +85,9 @@ if page == "📈 Statistiques du Modèle":
     # Coefficients du modèle
     st.subheader("Variables Influentes")
     coefficients = pd.DataFrame({
-        'Variable': ['Âge', 'Hypertension', 'Maladie cardiaque', 'Glucose', 'IMC'],
-        'Coefficient': [1.902, 0.529, 0.289, 0.018, 0.042],
-        'Odds Ratio': [6.70, 1.70, 1.34, 1.02, 1.04]
+        'Variable': ['Age', 'Type de Travail', 'Hypertension', 'Statut fumeur', 'Maladie cardiaque', 'Taux de glucose moyen', 'Formel statut fumeur', 'Type de résidence', 'IMC', 'Genre'],
+        'Coefficient': [1.901734, 1.047939, 0.528837, 0.397470, 0.289032, 0.201406, 0.172560, 0.051440, 0.005707, -0.014830],
+        'Odds Ratio': [6.70, 2.85, 1.70, 1.49, 1.34, 1.22, 1.19, 1.05, 1.00, 0.98]
     })
     st.dataframe(coefficients.style.format({'Odds Ratio': '{:.2f}'}))
     
