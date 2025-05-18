@@ -55,7 +55,7 @@ def calculer_imc(taille_cm, poids_kg):
 
 
 # Titre principal
-st.title("📊 Modèle de Prédiction d'AVC")
+st.title("📊 Prédiction du risque d'AVC")
 
 # Navigation
 page = st.sidebar.radio("Navigation", [
