@@ -65,11 +65,33 @@ page = st.sidebar.radio("Navigation", [
 ])
 
 if page == "📈 Statistiques du Modèle":
-    st.header("Performances du Modèle Logistique")
+    st.header("Performances du Modèle Retenu: Regression Logistique")
     
     # Split des données
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     
+        # Coefficients du modèle
+    st.subheader("Présentation du modèle")
+    coefficients = pd.DataFrame({
+        'Variable': ['Age', 'Type de Travail', 'Hypertension', 'Statut fumeur', 'Maladie cardiaque', 'Taux de glucose moyen', 'Formel statut fumeur', 'Type de résidence', 'IMC', 'Genre'],
+        'Coefficient': [1.901734, 1.047939, 0.528837, 0.397470, 0.289032, 0.201406, 0.172560, 0.051440, 0.005707, -0.014830],
+        'Odds Ratio': [6.70, 2.85, 1.70, 1.49, 1.34, 1.22, 1.19, 1.05, 1.00, 0.98],
+        'Intervalle de Confiance 95%': ['[3.42 ; 13.10]', '[1.66 ; 4.89]', '[1.37 ; 2.10]', '[1.08 ; 2.04]', '[1.01 ; 1.77]', '[1.08 ; 1.38]', '[0.94 ; 1.51]', '[0.89 ; 1.24]', '[0.98 ; 1.03]', '[0.71 ; 1.36]']
+    })
+    st.dataframe(coefficients.style.format({'Coefficient': '{:.2f}'}))
+
+        
+    # Interprétation clinique
+    st.subheader("Points Clés Cliniques")
+    st.markdown("""
+    - **Âge** : Facteur de risque majeur. Chaque unité d’âge augmente fortement le risque d’AVC. (OR=6.70 par année)
+    - **Type de travail** : Risque élevé probablement artefact lié à l’âge.
+    - **Hypertension** : Triple le risque d'AVC
+    - **Fumeur actuel**: Le tabagisme actif augmente le risque d’AVC de près de 50 %.
+    - **Maladie cardiaque**: Les individus souffrant d’une pathologie cardiaque ont un risque accru de 34 % de faire un AVC.
+    - **Hyperglycémie** : Chaque augmentation de 50mg/dL → +22% de risque
+    """)
+
     # Métriques
     col1, col2, col3 = st.columns(3)
     col1.metric("AUC-ROC", "0.839", "Bonne discrimination")
@@ -82,23 +104,8 @@ if page == "📈 Statistiques du Modèle":
     RocCurveDisplay.from_estimator(model, X_test, y_test, ax=ax)
     st.pyplot(fig)
     
-    # Coefficients du modèle
-    st.subheader("Variables Influentes")
-    coefficients = pd.DataFrame({
-        'Variable': ['Age', 'Type de Travail', 'Hypertension', 'Statut fumeur', 'Maladie cardiaque', 'Taux de glucose moyen', 'Formel statut fumeur', 'Type de résidence', 'IMC', 'Genre'],
-        'Coefficient': [1.901734, 1.047939, 0.528837, 0.397470, 0.289032, 0.201406, 0.172560, 0.051440, 0.005707, -0.014830],
-        'Odds Ratio': [6.70, 2.85, 1.70, 1.49, 1.34, 1.22, 1.19, 1.05, 1.00, 0.98],
-        'Intervalle de Confiance 95%': ['[3.42 ; 13.10]', '[1.66 ; 4.89]', '[1.37 ; 2.10]', '[1.08 ; 2.04]', '[1.01 ; 1.77]', '[1.08 ; 1.38]', '[0.94 ; 1.51]', '[0.89 ; 1.24]', '[0.98 ; 1.03]', '[0.71 ; 1.36]']
-    })
-    st.dataframe(coefficients.style.format({'Coefficient': '{:.2f}'}))
-    
-    # Interprétation clinique
-    st.subheader("Points Clés Cliniques")
-    st.markdown("""
-    - **Âge** : Facteur de risque majeur (OR=6.70 par année)
-    - **Hypertension** : Triple le risque d'AVC
-    - **Hyperglycémie** : Chaque augmentation de 50mg/dL → +27% de risque
-    """)
+
+
 
 elif page == "🔮 Simulation de Prédiction":
     st.header("Simulateur de Risque d'AVC")
