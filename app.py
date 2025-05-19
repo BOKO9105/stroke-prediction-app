@@ -65,13 +65,14 @@ page = st.sidebar.radio("Navigation", [
 ])
 
 if page == "📈 Statistiques du Modèle":
-    st.header("Performances du Modèle Retenu: Regression Logistique")
+    st.header("Modèle Retenu: Regression Logistique")
     
     # Split des données
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     
         # Coefficients du modèle
     st.subheader("Présentation du modèle")
+    
     coefficients = pd.DataFrame({
         'Variable': ['Age', 'Type de Travail', 'Hypertension', 'Statut fumeur', 'Maladie cardiaque', 'Taux de glucose moyen', 'Formel statut fumeur', 'Type de résidence', 'IMC', 'Genre'],
         'Coefficient': [1.901734, 1.047939, 0.528837, 0.397470, 0.289032, 0.201406, 0.172560, 0.051440, 0.005707, -0.014830],
@@ -92,6 +93,7 @@ if page == "📈 Statistiques du Modèle":
     - **Hyperglycémie** : Chaque augmentation de 50mg/dL → +22% de risque
     """)
 
+    st.subheader("Performances du modèle")
     # Métriques
     col1, col2, col3 = st.columns(3)
     col1.metric("AUC-ROC", "0.839", "Bonne discrimination")
